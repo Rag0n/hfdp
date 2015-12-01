@@ -1,72 +1,114 @@
-// Паттерн проектирования СТРАТЕГИЯ
-
 import Foundation
 
-// Абстрактный тип(в данном случае интерфейс, а не абстрактный класс)
+// в качестве супертипа - протокол(интерфейс)
 protocol FlyBehavior {
     func fly()
 }
 
-protocol QuackBehavior {
-    func quack()
-}
-
-// Конкретные реализации
+// конкретные классы поведения, описываемые супертипом
 class FlyWithWings: FlyBehavior {
     func fly() {
-        println("I'm flying with wings")
+        print("Я летаю с помощью крыльев")
     }
 }
 
 class FlyNoWay: FlyBehavior {
     func fly() {
-        println("I don't have wings and therefore I cant fly :(")
+        print("Я не летаю")
     }
 }
 
+// в качестве супертипа - протокол(интерфейс)
+protocol QuackBehavior {
+    func quack()
+}
+
+// конкретные классы поведения, описываемые супертипом
 class Quack: QuackBehavior {
     func quack() {
-        println("Quack-quack")
+        print("Я крякаю: quack-quack")
+    }
+}
+
+class QuackMute: QuackBehavior {
+    func quack() {
+        print("Я не крякаю :(")
     }
 }
 
 class Squeak: QuackBehavior {
     func quack() {
-        println("Squeak-squeak")
+        print("Я пищу: squeak-squeak")
     }
 }
 
-// Класс, имеющий постоянные аспекты и делегирующий переменные
-// Связь между Duck и FlyBehavior/QuackBehavior - это композиция, а не наследование
+
 class Duck {
-    // делегация
-    var flyBehavior: FlyBehavior?
-    var quackBehavior: QuackBehavior?
+    // Клиент Duck связан с абстракцией, а не с конкретными реализациями
+    private var flyBehavior: FlyBehavior
+    private var quackBehavior: QuackBehavior
     
-    func performQuack() {
-        quackBehavior?.quack()
+    required convenience init() {
+        self.init(flyBehavior: FlyNoWay(), quackBehavior: QuackMute())
     }
     
-    func performFly() {
-        flyBehavior?.fly()
+    private init(flyBehavior: FlyBehavior, quackBehavior: QuackBehavior) {
+        self.flyBehavior = flyBehavior
+        self.quackBehavior = quackBehavior
     }
     
     func display() {
-        println("I'm a duck")
+        print("Я утка")
+    }
+    
+    func performFly() {
+        // делегируем поведение
+        flyBehavior.fly()
+    }
+    
+    func performQuack() {
+        // делегируем поведение
+        quackBehavior.quack()
+    }
+    
+    func setFlyBehavior(flyBehavior: FlyBehavior) {
+        self.flyBehavior = flyBehavior
+    }
+    
+    func setQuackBehavior(quackBehavior: QuackBehavior) {
+        self.quackBehavior = quackBehavior
     }
 }
+
 
 class MallardDuck: Duck {
+    required init() {
+        super.init(flyBehavior: FlyWithWings(), quackBehavior: Quack())
+    }
+    
     override func display() {
-        println("I'm a mallard duck")
+        print("Я дикая(mallard) утка")
     }
 }
 
-//var myDuck = Duck()
-//myDuck.display()
-//myDuck = MallardDuck()
-//myDuck.display()
-//myDuck.performFly()
-//myDuck.flyBehavior = FlyWithWings()
-//myDuck.performFly()
+class ModelDuck: Duck {
+    required init() {
+        super.init(flyBehavior: FlyNoWay(), quackBehavior: Quack())
+    }
+    
+    override func display() {
+        print("Я утка-приманка(model)")
+    }
+}
 
+
+// Тестирование
+var duck: Duck = Duck()
+duck.display()
+duck.performFly()
+duck.performQuack()
+
+duck = MallardDuck()
+duck.display()
+duck.performFly()
+duck.performQuack()
