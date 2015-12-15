@@ -1,7 +1,6 @@
 import Foundation
 
-// интерфейс вместо абстрактного класса
-// абстрактный компонент
+// абстрактный компонент, общий интерфейс
 protocol Beverage {
     func cost() -> Double
     func description() -> String
@@ -46,7 +45,7 @@ class DarkRoast: Beverage {
     }
 }
 
-// конкретный декоратор
+// конкретное дополнение
 class Mocha: CondimentDecorator {
     override func description() -> String {
         return super.description() + ", Mocha"
@@ -57,18 +56,29 @@ class Mocha: CondimentDecorator {
     }
 }
 
+// конкретное дополнение
+class Whip: CondimentDecorator {
+    override func description() -> String {
+        return super.description() + ", Whip"
+    }
+    
+    override func cost() -> Double {
+        return super.cost() + 0.2
+    }
+}
+
+
 var myEspresso:Beverage = Espresso()
-var beverageDescription = myEspresso.description()
-var beverageCost = myEspresso.cost()
+print(myEspresso.description())
+print(myEspresso.cost())
 
 var myDarkRoast:Beverage = DarkRoast()
-beverageDescription = myDarkRoast.description()
-beverageCost = myDarkRoast.cost()
+print(myDarkRoast.description())
+print(myDarkRoast.cost())
+
 myDarkRoast = Mocha(beverage: myDarkRoast)
 myDarkRoast = Mocha(beverage: myDarkRoast)
-myDarkRoast = Mocha(beverage: myDarkRoast)
-myDarkRoast = Mocha(beverage: myDarkRoast)
-myDarkRoast = Mocha(beverage: myDarkRoast)
-beverageDescription = myDarkRoast.description()
-beverageCost = myDarkRoast.cost()
+myDarkRoast = Whip(beverage: myDarkRoast)
+print(myDarkRoast.description())
+print(myDarkRoast.cost())
 
