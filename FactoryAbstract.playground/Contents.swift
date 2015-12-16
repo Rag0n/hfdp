@@ -1,6 +1,4 @@
-import Foundation
-
-// abstract products
+// абстрактные продукты-ингредиенты
 protocol Dough {}
 protocol Sauce {}
 protocol Cheese {}
@@ -8,7 +6,7 @@ protocol Veggies {}
 protocol Pepperoni {}
 protocol Clams {}
 
-// abstract factory
+// абстрактная фабрика
 protocol PizzaIngredientFactory {
     func createDough() -> Dough
     func createSauce() -> Sauce
@@ -18,7 +16,7 @@ protocol PizzaIngredientFactory {
     func createClam() -> Clams
 }
 
-// concrete factory
+// конкретная фабрика
 class NYPizzaIngredientFactory: PizzaIngredientFactory {
     func createDough() -> Dough {
         return ThinCrustDough()
@@ -33,7 +31,7 @@ class NYPizzaIngredientFactory: PizzaIngredientFactory {
     }
     
     func createVeggies() -> [Veggies] {
-        var veggies: [Veggies] = [Garlic(), Onion(), Mushroom(), RedPepper()]
+        let veggies: [Veggies] = [Garlic(), Onion(), Mushroom(), RedPepper()]
         return veggies
     }
     
@@ -47,7 +45,7 @@ class NYPizzaIngredientFactory: PizzaIngredientFactory {
 }
 
 
-// concrete factory
+// конкретная фабрика
 class ChikagoPizzaIngredientFactory: PizzaIngredientFactory {
     func createDough() -> Dough {
         return ThinCrustDough()
@@ -62,7 +60,7 @@ class ChikagoPizzaIngredientFactory: PizzaIngredientFactory {
     }
     
     func createVeggies() -> [Veggies] {
-        var veggies: [Veggies] = [Garlic(), Onion(), Mushroom(), RedPepper()]
+        let veggies: [Veggies] = [Garlic(), Onion(), Mushroom(), RedPepper()]
         return veggies
     }
     
@@ -75,7 +73,7 @@ class ChikagoPizzaIngredientFactory: PizzaIngredientFactory {
     }
 }
 
-// concrete products
+// конкретные продукты-ингредиенты
 class Garlic: Veggies {}
 class Onion: Veggies {}
 class Mushroom: Veggies {}
@@ -86,81 +84,104 @@ class ReggianoCheese: Cheese {}
 class SlicedPepperoni: Pepperoni {}
 class FreshClams: Clams {}
 
-// abstract product
-class Pizza {
-    var name: String?
-    var dough: Dough?
-    var sauce: Sauce?
+
+// абстрактные продукт
+protocol Pizza {
+    var name: String! { get set }
+    var dough: Dough! { get }
+    var sauce: Sauce! { get }
+    var veggies: [Veggies]? { get }
+    var cheese: Cheese? { get }
+    var pepperoni: Pepperoni? { get }
+    var clam: Clams? { get }
+    
+    // абстрактный метод
+    func prepare()
+    
+    func bake()
+    func cut()
+    func box()
+}
+
+extension Pizza {
+    
+    func bake() {
+        print("Bake for 25 minutes at 350")
+    }
+    
+    func cut() {
+        print("Cutting the pizza into diagonal slices")
+    }
+    
+    func box() {
+        print("Place pizza in official PizzaStore box")
+    }
+}
+
+// конкретный продукт
+class CheesePizza: Pizza {
+    var name: String!
+    var dough: Dough!
+    var sauce: Sauce!
     var veggies: [Veggies]?
     var cheese: Cheese?
     var pepperoni: Pepperoni?
     var clam: Clams?
     
-    // abstract method
+    var ingredientFactory: PizzaIngredientFactory
+    
+    init(ingredientFactory: PizzaIngredientFactory) {
+        self.ingredientFactory = ingredientFactory
+    }
+    
     func prepare() {
-        println("Preparing \(name)")
-        println("Tossing dough...")
-        println("Adding sauce...")
-    }
-    
-    func bake() {
-        println("Bake for 25 minutes at 350")
-    }
-    
-    func cut() {
-        println("Cutting the pizza into diagonal slices")
-    }
-    
-    func box() {
-        println("Place pizza in official PizzaStore box")
-    }
-}
-
-// concrete pclient
-class CheesePizza: Pizza {
-    var ingredientFactory: PizzaIngredientFactory
-    
-    init(ingredientFactory: PizzaIngredientFactory) {
-        self.ingredientFactory = ingredientFactory
-    }
-    
-    override func prepare() {
-        println("Preparing \(name)")
+        print("Preparing \(name)")
         dough = ingredientFactory.createDough()
         sauce = ingredientFactory.createSauce()
         cheese = ingredientFactory.createCheese()
     }
 }
 
-// concrete product, but different ingredients
+// конкретный продукт с другими ингредиентами
 class ClamPizza: Pizza {
+    var name: String!
+    var dough: Dough!
+    var sauce: Sauce!
+    var veggies: [Veggies]?
+    var cheese: Cheese?
+    var pepperoni: Pepperoni?
+    var clam: Clams?
+    
     var ingredientFactory: PizzaIngredientFactory
     
     init(ingredientFactory: PizzaIngredientFactory) {
         self.ingredientFactory = ingredientFactory
     }
     
-    override func prepare() {
-        println("Preparing \(name)")
+    func prepare() {
+        print("Preparing \(name)")
         dough = ingredientFactory.createDough()
         sauce = ingredientFactory.createSauce()
         cheese = ingredientFactory.createCheese()
+        // У Нью-Йоркской фабрики мидии будут свежими, у Чикагской - мороженными
+        // но наши классы от этого не зависят - данные аспекты определяются фабрикой
         clam = ingredientFactory.createClam()
     }
 }
 
 
-
-protocol PizzaStoreInterface {
+// абстрактный класс создатель
+protocol PizzaStore {
     func orderPizza(type: String) -> Pizza
+    // фабричный метод
     func createPizza(type: String) -> Pizza
 }
 
-// abstract type(Client)
-class PizzaStore: PizzaStoreInterface {
-    final func orderPizza(type: String) -> Pizza {
+extension PizzaStore {
+    func orderPizza(type: String) -> Pizza {
+        // для создание пиццы используем фабричный метод
         let pizza = createPizza(type)
-
+        
         pizza.prepare()
         pizza.bake()
         pizza.cut()
@@ -168,48 +189,61 @@ class PizzaStore: PizzaStoreInterface {
         
         return pizza
     }
+}
+
+// конкретный класс-создатель
+class NYPizzaStore: PizzaStore {
     
-    // abstract fabric method
     func createPizza(type: String) -> Pizza {
-        return Pizza()
-    }
-}
-
-// Concrete client
-class NYStylePizzaStore: PizzaStore {
-    // fabric method
-    override func createPizza(type: String) -> Pizza {
-        var pizza: Pizza
-        var ingredientFactory: PizzaIngredientFactory = NYPizzaIngredientFactory()
+        let ingredientFactory = NYPizzaIngredientFactory()
+        let newPizza: Pizza
         
         switch type {
-            case "cheese": pizza = CheesePizza(ingredientFactory: ingredientFactory)
-            case "pepperoni": pizza = ClamPizza(ingredientFactory: ingredientFactory)
-            default: pizza = Pizza()
+        case "cheese":
+            newPizza = CheesePizza(ingredientFactory: ingredientFactory)
+            newPizza.name = "New York Style Cheese Pizza"
+        case "clam":
+            newPizza = ClamPizza(ingredientFactory: ingredientFactory)
+            newPizza.name = "New York Style Clam Pizza"
+        default:
+            newPizza = CheesePizza(ingredientFactory: ingredientFactory)
+            newPizza.name = "New York Style Cheese Pizza"
         }
-        return pizza
+        
+        return newPizza
     }
 }
 
-// Concrete client
-class ChikagoStylePizzaStore: PizzaStore {
+
+// конкретный класс-создатель
+class ChikagoPizzaStore: PizzaStore {
     // fabric method
-    override func createPizza(type: String) -> Pizza {
-        var pizza: Pizza
-        var ingredientFactory: PizzaIngredientFactory = ChikagoPizzaIngredientFactory()
+    func createPizza(type: String) -> Pizza {
+        let ingredientFactory: PizzaIngredientFactory = ChikagoPizzaIngredientFactory()
+        let newPizza: Pizza
         
         switch type {
-        case "cheese": pizza = CheesePizza(ingredientFactory: ingredientFactory)
-        case "pepperoni": pizza = ClamPizza(ingredientFactory: ingredientFactory)
-        default: pizza = Pizza()
+        case "cheese":
+            newPizza = CheesePizza(ingredientFactory: ingredientFactory)
+            newPizza.name = "Chikago Style Cheese Pizza"
+        case "clam":
+            newPizza = ClamPizza(ingredientFactory: ingredientFactory)
+            newPizza.name = "Chikago Style Clam Pizza"
+        default:
+            newPizza = CheesePizza(ingredientFactory: ingredientFactory)
+            newPizza.name = "Chikago Style Cheese Pizza"
         }
-        return pizza
+        return newPizza
     }
 }
 
 
-var nyStore = NYStylePizzaStore()
-var chikagoStore = ChikagoStylePizzaStore()
-var pizza: Pizza = nyStore.orderPizza("cheese")
+let nyStore = NYPizzaStore()
+let chikagoStore = ChikagoPizzaStore()
+var pizza: Pizza
+pizza = nyStore.orderPizza("cheese")
+print(pizza.name)
+print("\n")
 pizza = chikagoStore.orderPizza("cheese")
+print(pizza.name)
 
